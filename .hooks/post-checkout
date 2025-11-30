@@ -19,4 +19,4 @@ echo '     new HEAD: '`git name-rev --name-only $newHEAD`
 # this is a file checkout – do nothing
 if [ $checkoutType == 'file' ]; then exit; fi
 
-make clean
+npm ci

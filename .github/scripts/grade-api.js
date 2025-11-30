@@ -2,15 +2,14 @@
 
 /**
  * Grade the dashboard-api/src/routes/stats.js file
- * Tests the MongoDB aggregation pipelines
+ * Tests the MongoDB aggregation pipelines (static analysis)
  */
 
 import fs from 'fs';
 import path from 'path';
-import { MongoClient } from 'mongodb';
+import { fileURLToPath } from 'url';
 
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017';
-const DB_NAME = 'sample_restaurants';
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 /**
  * Extract pipelines from stats.js file
@@ -65,55 +64,9 @@ function extractPipelines(code) {
 }
 
 /**
- * Test a pipeline against the database
- */
-async function testPipeline(db, pipelineCode, expectedValidator) {
-    if (!pipelineCode) {
-        return { passed: false, message: 'Pipeline not implemented' };
-    }
-
-    try {
-        // Safely evaluate the pipeline
-        // We need to handle MongoDB operators
-        const pipelineStr = `[${pipelineCode}]`;
-
-        // Create a safe evaluation context
-        const evalContext = {
-            result: null
-        };
-
-        // This is a simplified approach - in production you'd want a proper parser
-        const cleanPipeline = pipelineStr
-            .replace(/\$(\w+)/g, '"\\$$1"')  // Quote MongoDB operators
-            .replace(/(\w+):/g, '"$1":');     // Quote object keys
-
-        let pipeline;
-        try {
-            pipeline = JSON.parse(cleanPipeline);
-        } catch (e) {
-            // If JSON parse fails, try eval (less safe but handles JS syntax)
-            try {
-                pipeline = eval(pipelineStr);
-            } catch (e2) {
-                return { passed: false, message: `Parse error: ${e.message}` };
-            }
-        }
-
-        // Execute the pipeline
-        const result = await db.collection('restaurants').aggregate(pipeline).toArray();
-
-        // Validate result
-        return expectedValidator(result);
-
-    } catch (error) {
-        return { passed: false, message: `Execution error: ${error.message}` };
-    }
-}
-
-/**
  * Main grading function
  */
-async function gradeApi(filePath) {
+function gradeApi(filePath) {
     console.log('🔍 Grading API pipelines...\n');
 
     if (!fs.existsSync(filePath)) {
@@ -193,9 +146,8 @@ async function gradeApi(filePath) {
         }
     }
 
-    // Save result
-    const outputPath = path.join(path.dirname(filePath), '../.github/scripts/api-report.json');
-    fs.mkdirSync(path.dirname(outputPath), { recursive: true });
+    // Save result - use script directory for consistent path
+    const outputPath = path.join(__dirname, 'api-report.json');
     fs.writeFileSync(outputPath, JSON.stringify(result, null, 2));
 
     console.log(`\n✅ API grading complete`);

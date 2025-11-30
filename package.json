@@ -22,7 +22,8 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "commit:checks": "npx --no-install git-precommit-checks && npx lint-staged && npx validate-branch-name && git-cz",
-    "prepare-commit": "cross-env CHECKS_RUN=1 npm run commit:checks"
+    "prepare-commit": "cross-env CHECKS_RUN=1 npm run commit:checks",
+    "prepare": "git config core.hooksPath .hooks"
   },
   "type": "module",
   "devDependencies": {

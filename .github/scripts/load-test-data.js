@@ -124,14 +124,14 @@ async function loadTestData() {
         try {
             await db.collection('restaurants').drop();
             console.log('   Dropped existing restaurants collection');
-        } catch (e) {
+        } catch {
             // Collection doesn't exist, that's fine
         }
 
         try {
             await db.collection('boroughs').drop();
             console.log('   Dropped existing boroughs collection');
-        } catch (e) {
+        } catch {
             // Collection doesn't exist, that's fine
         }
 
