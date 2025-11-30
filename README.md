@@ -1,4 +1,15 @@
-# TP2 : Requêtage avancé et pipeline d'agrégation MongoDB (4h)
+# <img src="https://raw.githubusercontent.com/IUTInfoAix-R510/Syllabus/main/assets/logo.png" alt="class logo" class="logo"/> R5.Real.10 - Nouveaux paradigmes de base de données
+
+### IUT d’Aix-Marseille – Département Informatique Aix-en-Provence
+
+* **Ressource:** [R5.Real.10](https://cache.media.enseignementsup-recherche.gouv.fr/file/SPE4-MESRI-17-6-2021/35/5/Annexe_17_INFO_BUT_annee_1_1411355.pdf)
+* **Responsables:**
+  * [Sébastien Nedjar](mailto:sebastien.nedjar@univ-amu.fr)
+* **Besoin d'aide ?**
+  * Consulter et/ou créer des [issues](https://github.com/IUTInfoAix-R510/Cours/issues).
+  * [Email](mailto:sebastien.nedjar@univ-amu.fr) pour une question d'ordre privée, ou pour convenir d'un rendez-vous physique.
+
+# Travaux pratiques R5.Real.10 - Requêtage avancé et pipeline d'agrégation MongoDB (4h)
 
 ## Objectifs de la séance
 
@@ -19,6 +30,79 @@ Les concepts de cette séance sont essentiels pour votre projet final :
 ### Prérequis
 - TP1 complété (CRUD, documents imbriqués)
 - MongoDB Atlas configuré et accessible
+
+
+---
+
+## Création de votre fork du TP
+
+La première chose que vous allez faire est de créer un fork personnel du présent dépôt. Pour ce faire, rendez-vous sur le lien suivant :
+
+<https://classroom.github.com/a/NmF5phCM>
+
+GitHub va vous créer un dépôt contenant un fork du dépôt 'IUTInfoAix-R510/tp2' et s'appelant 'IUTInfoAix-R510-2025/tp2-votreUsername'. Vous apparaîtrez automatiquement comme contributeur de ce projet pour y pousser votre travail.
+
+---
+
+## 📝 Rendu du travail
+
+Ce TP comporte **deux parties** à rendre :
+
+### Partie 1 : Exercices MongoDB (Phases 1 à 5)
+
+#### Utilisation du fichier playground
+
+Un fichier `playground-tp2.mongodb.js` est mis à votre disposition pour les exercices des phases 1 à 5.
+
+**🚀 Comment utiliser le playground**
+
+1. **Configuration initiale**
+   - Ouvrez le fichier `playground-tp2.mongodb.js` dans VS Code
+   - Connectez-vous à votre cluster MongoDB Atlas via l'extension MongoDB for VS Code
+   - Vérifiez que le dataset `sample_restaurants` est bien chargé
+
+2. **Pendant le TP**
+   - Chaque exercice a son emplacement dédié avec des instructions
+   - Écrivez votre code dans les zones `// TODO`
+   - Testez vos requêtes directement avec `Ctrl+Alt+R` ou clic droit > Run
+   - Le résultat attendu est indiqué pour chaque exercice
+
+3. **Avant de rendre**
+   - Vérifiez que toutes vos requêtes fonctionnent
+   - Ajoutez des commentaires pour expliquer les requêtes complexes
+   - Assurez-vous qu'il n'y a pas d'erreurs de syntaxe
+
+### Partie 2 : Mini-projet Dashboard (Phase 6)
+
+La phase 6 consiste à compléter une application complète avec API REST et dashboard.
+
+**📁 Fichiers à compléter**
+
+| Fichier | Description |
+|---------|-------------|
+| `dashboard-api/src/routes/stats.js` | Les 5 pipelines d'agrégation à implémenter |
+| `dashboard-api/tests/pipelines.test.js` | (Optionnel) Copier vos pipelines pour les tester unitairement |
+
+**✅ Validation**
+
+Votre travail est validé quand :
+1. Les **tests passent** : `npm run test:api` (depuis `dashboard-api/`)
+2. Le **dashboard affiche les données** : graphiques visibles sur http://localhost:5500
+
+### Méthode de rendu
+
+1. **Committez et poussez** vos fichiers sur votre dépôt GitHub :
+   - `playground-tp2.mongodb.js` (exercices phases 1-5)
+   - `dashboard-api/src/routes/stats.js` (pipelines phase 6)
+
+2. **Date limite** : voir la date indiquée sur GitHub Classroom
+
+### 💡 Conseils
+
+- Sauvegardez régulièrement et versionnez après chaque exercice
+- Testez vos pipelines dans le playground avant de les copier dans l'API
+- Utilisez les tests pour valider votre travail : `npm test` et `npm run test:api`
+- Le bonus `$facet` (route `/api/stats/dashboard`) est optionnel mais recommandé
 
 ---
 
