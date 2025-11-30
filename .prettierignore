@@ -1,0 +1,15 @@
+# Dépendances
+node_modules/
+
+# Build
+dist/
+build/
+coverage/
+
+# Fichiers générés
+*.min.js
+*.min.css
+package-lock.json
+
+# Fichiers MongoDB Playground (syntaxe spéciale)
+*.mongodb.js

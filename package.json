@@ -16,9 +16,17 @@
     "start:front": "npm run start --workspace=@tp2/dashboard-front",
     "test": "npm run test --workspace=@tp2/dashboard-api",
     "test:api": "npm run test:api --workspace=@tp2/dashboard-api",
-    "test:all": "npm run test:all --workspace=@tp2/dashboard-api"
+    "test:all": "npm run test:all --workspace=@tp2/dashboard-api",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   },
+  "type": "module",
   "devDependencies": {
-    "concurrently": "^8.2.2"
+    "@eslint/js": "^9.15.0",
+    "concurrently": "^8.2.2",
+    "eslint": "^9.15.0",
+    "prettier": "^3.4.2"
   }
 }

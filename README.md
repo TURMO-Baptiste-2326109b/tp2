@@ -1091,6 +1091,8 @@ flowchart LR
 ```
 tp2/
 ├── package.json                    ← Workspace racine (npm workspaces)
+├── eslint.config.js                ← Configuration ESLint
+├── .prettierrc                     ← Configuration Prettier
 ├── README.md
 ├── playground-tp2.mongodb.js
 ├── solutions-tp2.mongodb.js
@@ -1191,6 +1193,28 @@ curl http://localhost:3000/api/stats/overview
 Ouvrez http://localhost:5500 dans votre navigateur.
 
 Le dashboard affichera **"TODO"** pour chaque métrique tant que vous n'aurez pas complété les pipelines.
+
+#### Outils de qualité de code (optionnel)
+
+Le projet inclut **ESLint** et **Prettier** pour maintenir un code propre et cohérent.
+
+**Commandes disponibles :**
+
+```bash
+# Vérifier le style de code (erreurs et warnings)
+npm run lint
+
+# Corriger automatiquement les problèmes de style
+npm run lint:fix
+
+# Vérifier le formatage du code
+npm run format:check
+
+# Formater automatiquement tous les fichiers
+npm run format
+```
+
+> **Conseil :** Exécutez `npm run lint` et `npm run format` avant de committer votre travail pour assurer un code propre.
 
 ### 6.3 Comprendre et tester une API REST
 

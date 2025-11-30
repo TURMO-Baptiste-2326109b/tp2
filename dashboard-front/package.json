@@ -2,6 +2,7 @@
   "name": "@tp2/dashboard-front",
   "version": "1.0.0",
   "description": "Dashboard web pour visualiser les métriques restaurants - TP2 MongoDB",
+  "type": "commonjs",
   "main": "src/server.js",
   "scripts": {
     "start": "node src/server.js",

@@ -2,6 +2,7 @@
   "name": "@tp2/dashboard-api",
   "version": "1.0.0",
   "description": "API REST pour le dashboard restaurants - TP2 MongoDB",
+  "type": "commonjs",
   "main": "src/server.js",
   "scripts": {
     "start": "node src/server.js",
