@@ -1093,9 +1093,9 @@ tp2/
 ├── package.json                    ← Workspace racine (npm workspaces)
 ├── eslint.config.js                ← Configuration ESLint
 ├── .prettierrc                     ← Configuration Prettier
-├── commitlint.config.js            ← Convention de commits
-├── git-precommit-checks.config.js  ← Vérifications pre-commit
-├── .validate-branch-namerc.js      ← Convention de nommage des branches
+├── commitlint.config.cjs           ← Convention de commits
+├── git-precommit-checks.json       ← Vérifications pre-commit
+├── .validate-branch-namerc.cjs     ← Convention de nommage des branches
 ├── README.md
 ├── playground-tp2.mongodb.js
 ├── solutions-tp2.mongodb.js
