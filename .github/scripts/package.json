@@ -1,0 +1,14 @@
+{
+  "name": "mongodb-tp2-grader",
+  "version": "1.0.0",
+  "description": "Automatic grading system for MongoDB TP2",
+  "type": "module",
+  "scripts": {
+    "grade": "node grade-playground.js",
+    "grade:api": "node grade-api.js",
+    "load-data": "node load-test-data.js"
+  },
+  "dependencies": {
+    "mongodb": "^6.12.0"
+  }
+}

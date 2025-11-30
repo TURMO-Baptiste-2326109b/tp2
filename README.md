@@ -97,6 +97,30 @@ Votre travail est validé quand :
 
 2. **Date limite** : voir la date indiquée sur GitHub Classroom
 
+### Auto-évaluation GitHub Actions
+
+À chaque push sur `main` ou création de Pull Request, un workflow GitHub Actions évalue automatiquement votre travail :
+
+| Critère | Points | Description |
+|---------|--------|-------------|
+| Structure playground | 5 | Informations étudiant renseignées |
+| Exercices playground | 35 | 16 exercices des phases 1-5 |
+| Pipelines API | 50 | 5 routes d'agrégation dans stats.js |
+| Tests automatiques | 10 | Tests unitaires et d'intégration |
+| **Total** | **100** | |
+
+**Comment voir vos résultats :**
+
+1. Allez dans l'onglet **Actions** de votre dépôt GitHub
+2. Cliquez sur la dernière exécution du workflow "Grade MongoDB TP2 Assignment"
+3. Consultez le résumé détaillé dans les logs
+
+**Sur une Pull Request :**
+- Un commentaire automatique affiche votre note et le détail par critère
+- Le statut du commit indique si vous avez atteint le seuil de 50/100
+
+> **Note :** Cette note est indicative. La note finale sera déterminée par l'enseignant.
+
 ### 💡 Conseils
 
 - Sauvegardez régulièrement et versionnez après chaque exercice

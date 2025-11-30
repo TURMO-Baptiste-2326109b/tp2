@@ -1,0 +1,239 @@
+name: Grade MongoDB TP2 Assignment
+
+on:
+  push:
+    branches: [main, master]
+    paths:
+      - "playground-tp2.mongodb.js"
+      - "dashboard-api/src/routes/stats.js"
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  statuses: write
+  pull-requests: write
+  issues: write
+
+jobs:
+  grade:
+    runs-on: ubuntu-latest
+
+    services:
+      mongodb:
+        image: mongo:7.0
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd "mongosh --eval 'db.runCommand({ ping: 1 })'"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install grading dependencies
+        run: |
+          cd .github/scripts
+          npm install
+
+      - name: Wait for MongoDB
+        run: |
+          echo "Waiting for MongoDB to be ready..."
+          for i in {1..30}; do
+            if mongosh --eval "db.runCommand({ ping: 1 })" > /dev/null 2>&1; then
+              echo "MongoDB is ready!"
+              break
+            fi
+            echo "Waiting... ($i/30)"
+            sleep 2
+          done
+
+      - name: Load sample_restaurants data
+        run: |
+          echo "Loading sample_restaurants dataset..."
+          cd .github/scripts
+          node load-test-data.js
+        env:
+          MONGODB_URI: mongodb://localhost:27017
+
+      - name: Grade playground exercises
+        id: grade-playground
+        run: |
+          cd .github/scripts
+          node grade-playground.js ../../playground-tp2.mongodb.js
+        env:
+          MONGODB_URI: mongodb://localhost:27017
+        continue-on-error: true
+
+      - name: Grade API pipelines
+        id: grade-api
+        run: |
+          cd .github/scripts
+          node grade-api.js ../../dashboard-api/src/routes/stats.js
+        env:
+          MONGODB_URI: mongodb://localhost:27017
+        continue-on-error: true
+
+      - name: Run API tests
+        id: api-tests
+        run: |
+          cd dashboard-api
+          cp .env.example .env 2>/dev/null || echo "MONGODB_URI=mongodb://localhost:27017" > .env
+          echo "MONGODB_URI=mongodb://localhost:27017" >> .env
+          echo "MONGODB_DATABASE=sample_restaurants" >> .env
+          npm install
+          npm run test 2>&1 | tee test-output.txt || true
+        env:
+          MONGODB_URI: mongodb://localhost:27017
+          MONGODB_DATABASE: sample_restaurants
+        continue-on-error: true
+
+      - name: Generate final report
+        id: final-report
+        run: |
+          cd .github/scripts
+          node generate-report.js
+        continue-on-error: true
+
+      - name: Create grade report artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: grade-report
+          path: .github/scripts/grade-report.json
+          if-no-files-found: ignore
+
+      - name: Display grade summary
+        if: always()
+        run: |
+          if [ -f .github/scripts/grade-report.json ]; then
+            echo "📊 GRADING RESULTS"
+            echo "=================="
+            cat .github/scripts/grade-report.json | python3 -c "
+          import json, sys
+          data = json.load(sys.stdin)
+          print(f\"Total Score: {data.get('totalScore', 'N/A')}/100\")
+          print()
+          print('=== Playground (Phases 1-5) ===' )
+          pg = data.get('playground', {})
+          print(f\"  Structure: {pg.get('structure', {}).get('score', 0)}/{pg.get('structure', {}).get('maxScore', 5)}\")
+          print(f\"  Exercises: {pg.get('exercises', {}).get('score', 0)}/{pg.get('exercises', {}).get('maxScore', 35)}\")
+          print(f\"  Completed: {pg.get('exercises', {}).get('completed', 0)}/{pg.get('exercises', {}).get('total', 16)}\")
+          print()
+          print('=== API Pipelines (Phase 6) ===' )
+          api = data.get('api', {})
+          print(f\"  Pipelines: {api.get('pipelines', {}).get('score', 0)}/{api.get('pipelines', {}).get('maxScore', 50)}\")
+          print(f\"  Implemented: {api.get('pipelines', {}).get('implemented', 0)}/{api.get('pipelines', {}).get('total', 5)}\")
+          print()
+          print('=== Tests ===' )
+          tests = data.get('tests', {})
+          print(f\"  Passed: {tests.get('passed', 0)}/{tests.get('total', 0)}\")
+          print(f\"  Score: {tests.get('score', 0)}/{tests.get('maxScore', 10)}\")
+          print()
+          for fb in data.get('feedback', []):
+              print(f\"  {fb}\")
+          "
+          else
+            echo "❌ No grade report found"
+          fi
+
+      - name: Comment PR with grade
+        if: github.event_name == 'pull_request' && always()
+        uses: actions/github-script@v7
+        continue-on-error: true
+        with:
+          script: |
+            const fs = require('fs');
+
+            let report;
+            try {
+              report = JSON.parse(fs.readFileSync('.github/scripts/grade-report.json', 'utf8'));
+            } catch (e) {
+              console.log('Could not read grade report:', e.message);
+              return;
+            }
+
+            const pg = report.playground || {};
+            const api = report.api || {};
+            const tests = report.tests || {};
+
+            const body = `## 📊 Résultat de l'auto-évaluation TP2
+
+            **Note totale : ${report.totalScore}/100**
+
+            ### Partie 1 : Playground MongoDB (Phases 1-5)
+
+            | Critère | Score | Détails |
+            |---------|-------|---------|
+            | Structure | ${pg.structure?.score || 0}/${pg.structure?.maxScore || 5} | Informations étudiant |
+            | Exercices | ${pg.exercises?.score || 0}/${pg.exercises?.maxScore || 35} | ${pg.exercises?.completed || 0}/${pg.exercises?.total || 16} complétés |
+
+            ### Partie 2 : API Dashboard (Phase 6)
+
+            | Pipeline | Status |
+            |----------|--------|
+            | /api/stats/overview | ${api.pipelines?.details?.overview ? '✅' : '❌'} |
+            | /api/stats/par-quartier | ${api.pipelines?.details?.parQuartier ? '✅' : '❌'} |
+            | /api/stats/top-cuisines | ${api.pipelines?.details?.topCuisines ? '✅' : '❌'} |
+            | /api/stats/distribution-grades | ${api.pipelines?.details?.distributionGrades ? '✅' : '❌'} |
+            | /api/stats/evolution-scores | ${api.pipelines?.details?.evolutionScores ? '✅' : '❌'} |
+            | /api/stats/dashboard (BONUS) | ${api.pipelines?.details?.dashboard ? '✅' : '⬜'} |
+
+            ### Tests automatiques
+
+            - Tests passés : ${tests.passed || 0}/${tests.total || 0}
+            - Score tests : ${tests.score || 0}/${tests.maxScore || 10}
+
+            ${report.totalScore >= 80 ? '🎉 Excellent travail !' : report.totalScore >= 60 ? '👍 Bon travail, quelques améliorations possibles.' : '⚠️ Travail à améliorer.'}
+
+            ---
+            *Cette note est indicative. La note finale sera déterminée par l'enseignant.*
+            `;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: body
+            });
+
+      - name: Update commit status
+        if: always()
+        uses: actions/github-script@v7
+        continue-on-error: true
+        with:
+          script: |
+            const fs = require('fs');
+
+            let report;
+            try {
+              report = JSON.parse(fs.readFileSync('.github/scripts/grade-report.json', 'utf8'));
+            } catch (e) {
+              console.log('Could not read grade report:', e.message);
+              return;
+            }
+
+            const state = report.totalScore >= 50 ? 'success' : 'failure';
+            const description = `Note: ${report.totalScore}/100`;
+
+            try {
+              await github.rest.repos.createCommitStatus({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                sha: context.sha,
+                state: state,
+                description: description,
+                context: 'Auto-grading TP2'
+              });
+            } catch (e) {
+              console.log('Could not create commit status:', e.message);
+            }
