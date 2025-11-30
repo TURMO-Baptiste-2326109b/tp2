@@ -1096,6 +1096,7 @@ tp2/
 ├── commitlint.config.cjs           ← Convention de commits
 ├── git-precommit-checks.json       ← Vérifications pre-commit
 ├── .validate-branch-namerc.cjs     ← Convention de nommage des branches
+├── .releaserc.json                 ← Configuration semantic-release
 ├── README.md
 ├── playground-tp2.mongodb.js
 ├── solutions-tp2.mongodb.js
