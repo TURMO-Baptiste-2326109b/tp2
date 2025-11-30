@@ -283,7 +283,7 @@ describe('API - Route BONUS /api/stats/dashboard', () => {
 // ============================================================================
 
 describe('Résumé', () => {
-    it('affiche le résumé des tests', async () => {
+    it('affiche le résumé des tests', () => {
         console.log('\n📊 Pour voir vos résultats en action, ouvrez dashboard-front/index.html\n');
     });
 });

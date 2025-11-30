@@ -4,7 +4,7 @@
 
 const { getDB } = require('../config/database');
 
-async function statsRoutes(fastify) {
+function statsRoutes(fastify) {
 
     // ========================================================================
     // GET /api/stats/overview
