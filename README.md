@@ -1273,17 +1273,26 @@ Au fur et à mesure que vous complétez les pipelines :
 
 #### Option 2 : Validation par les tests
 
-Des tests automatisés sont fournis pour vérifier vos pipelines :
+Des tests automatisés sont fournis pour vérifier vos pipelines. Trois commandes sont disponibles :
 
 ```bash
-# Depuis la racine du projet
+# Depuis le dossier dashboard-api/
 
-# Tester les routes de l'API (l'API doit être démarrée)
+# 1. Tests unitaires des pipelines (connexion directe à MongoDB)
+#    Ces tests vérifient vos pipelines en les exécutant directement sur la base
+#    ⚠️ Vous devez copier vos pipelines dans tests/pipelines.test.js
+npm test
+
+# 2. Tests d'intégration de l'API (via HTTP)
+#    Ces tests appellent les routes de votre API
+#    ⚠️ L'API doit être démarrée dans un autre terminal !
 npm run test:api
 
-# Tester tous les pipelines
+# 3. Tous les tests (pipelines + API)
 npm run test:all
 ```
+
+> **Important :** Les tests **échouent** si les routes ne sont pas implémentées. C'est le comportement attendu !
 
 Résultat attendu quand tout est implémenté :
 ```
@@ -1296,6 +1305,7 @@ Résultat attendu quand tout est implémenté :
 ```
 
 Les tests vérifient :
+- Que les réponses ne sont pas des placeholders "TODO"
 - La structure des réponses (champs attendus)
 - La cohérence des données (nombre de quartiers, tri, etc.)
 - Les valeurs raisonnables (> 20000 restaurants, etc.)
