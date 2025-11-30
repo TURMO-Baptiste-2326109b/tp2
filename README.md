@@ -974,7 +974,7 @@ Trouver les 5 restaurants italiens les plus proches de Central Park (coordonnée
 ## Phase 6 : Mini-projet - Dashboard avec API REST (45 min)
 
 Dans cette phase finale, vous allez **intégrer vos pipelines MongoDB dans une vraie application** composée de :
-- Une **API REST** (Node.js/Express) qui expose vos requêtes d'agrégation
+- Une **API REST** (Node.js/Fastify) qui expose vos requêtes d'agrégation
 - Un **dashboard web** qui affiche les métriques sous forme de graphiques
 
 Cette architecture en couches est exactement celle que vous utiliserez pour votre projet fil rouge.
@@ -984,7 +984,7 @@ Cette architecture en couches est exactement celle que vous utiliserez pour votr
 ```
 ┌─────────────────┐     HTTP/JSON     ┌─────────────────┐     Driver      ┌─────────────────┐
 │   Dashboard     │ ◄───────────────► │   API REST      │ ◄─────────────► │   MongoDB       │
-│   (Front-end)   │                   │   (Express)     │                 │   Atlas         │
+│   (Front-end)   │                   │   (Fastify)     │                 │   Atlas         │
 │   HTML/JS       │                   │   Node.js       │                 │                 │
 └─────────────────┘                   └─────────────────┘                 └─────────────────┘
      Port 5500                             Port 3000                        Cloud
@@ -994,56 +994,93 @@ Cette architecture en couches est exactement celle que vous utiliserez pour votr
 
 ```
 tp2/
+├── package.json                    ← Workspace racine (npm workspaces)
 ├── README.md
 ├── playground-tp2.mongodb.js
 ├── solutions-tp2.mongodb.js
-├── dashboard-api/              ← API REST (à compléter)
+│
+├── dashboard-api/                  ← API REST (à compléter)
 │   ├── package.json
-│   ├── server.js               ← Routes avec TODO
-│   ├── server.solution.js      ← Solution complète
-│   └── .env.example
-└── dashboard-front/            ← Interface web (fourni)
-    └── index.html
+│   ├── .env.example
+│   ├── src/
+│   │   ├── server.js               ← Point d'entrée
+│   │   ├── config/
+│   │   │   └── database.js         ← Connexion MongoDB
+│   │   └── routes/
+│   │       ├── health.js           ← Route /api/health
+│   │       ├── stats.js            ← Routes stats avec TODO
+│   │       └── stats.solution.js   ← Solution complète
+│   └── tests/
+│       ├── api.test.js             ← Tests des routes HTTP
+│       └── pipelines.test.js       ← Tests des pipelines
+│
+└── dashboard-front/                ← Interface web (fourni)
+    ├── package.json
+    ├── .env.example
+    ├── src/
+    │   └── server.js               ← Serveur Fastify Static
+    └── public/
+        └── index.html              ← Dashboard HTML/CSS/JS
 ```
+
+> **Note :** Ce projet utilise les **npm workspaces** pour gérer les deux sous-modules depuis la racine.
 
 ### 6.2 Installation et configuration
 
-#### Étape 1 : Configurer l'API
+#### Étape 1 : Installer les dépendances
 
 ```bash
-# Aller dans le dossier API
-cd dashboard-api
-
-# Installer les dépendances
+# À la racine du projet tp2/
 npm install
-
-# Créer le fichier de configuration
-cp .env.example .env
 ```
 
-Éditez le fichier `.env` avec votre URI MongoDB Atlas :
+Cette commande installe les dépendances des deux sous-modules (API et Front) grâce aux npm workspaces.
+
+#### Étape 2 : Configurer les environnements
+
+```bash
+# Créer les fichiers de configuration
+cp dashboard-api/.env.example dashboard-api/.env
+cp dashboard-front/.env.example dashboard-front/.env
 ```
-MONGODB_URI=mongodb+srv://VOTRE_USER:VOTRE_PASSWORD@cluster.mongodb.net/sample_restaurants
+
+Éditez le fichier `dashboard-api/.env` avec votre URI MongoDB Atlas :
+```
+MONGODB_URI=mongodb+srv://VOTRE_USER:VOTRE_PASSWORD@cluster.mongodb.net
+MONGODB_DATABASE=sample_restaurants
 PORT=3000
 ```
 
-#### Étape 2 : Démarrer l'API
+Le fichier `dashboard-front/.env` peut rester avec les valeurs par défaut (port 5500).
+
+#### Étape 3 : Démarrer les serveurs
+
+**Option A : Démarrer les deux serveurs séparément (recommandé pour le développement)**
 
 ```bash
-# Démarrer le serveur (avec auto-reload)
-npm run dev
+# Terminal 1 - API (port 3000)
+npm run dev:api
 
-# Ou sans auto-reload
-npm start
+# Terminal 2 - Front (port 5500)
+npm run dev:front
 ```
+
+**Option B : Démarrer les deux serveurs en parallèle**
+
+```bash
+npm run dev
+```
+
+> **Note :** Avec l'option B, les logs des deux serveurs seront mélangés.
 
 Vous devriez voir :
 ```
 ✅ Connecté à MongoDB Atlas
 🚀 API démarrée sur http://localhost:3000
+🌐 Dashboard accessible sur http://localhost:5500
 ```
 
-#### Étape 3 : Tester l'API
+#### Étape 4 : Tester l'API
 
 ```bash
 # Test de santé
@@ -1053,15 +1090,15 @@ curl http://localhost:3000/api/health
 curl http://localhost:3000/api/stats/overview
 ```
 
-#### Étape 4 : Lancer le dashboard
+#### Étape 5 : Ouvrir le dashboard
 
-Ouvrez `dashboard-front/index.html` dans votre navigateur (double-clic ou via Live Server dans VS Code).
+Ouvrez http://localhost:5500 dans votre navigateur.
 
 Le dashboard affichera **"TODO"** pour chaque métrique tant que vous n'aurez pas complété les pipelines.
 
 ### 6.3 Votre mission : Compléter les routes API
 
-Ouvrez `dashboard-api/server.js` et complétez les 5 pipelines d'agrégation :
+Ouvrez `dashboard-api/src/routes/stats.js` et complétez les 5 pipelines d'agrégation :
 
 #### Route 1 : `/api/stats/overview`
 ```javascript
@@ -1110,12 +1147,43 @@ const pipeline = [
 
 ### 6.4 Validation
 
+#### Option 1 : Validation visuelle (Dashboard)
+
 Au fur et à mesure que vous complétez les pipelines :
 1. **Sauvegardez** `server.js` (le serveur redémarre automatiquement avec `npm run dev`)
 2. **Rafraîchissez** le dashboard dans le navigateur
 3. Les graphiques passent de **"TODO"** à des **vraies données**
 
-**Objectif final :** Tous les graphiques affichent des données réelles !
+#### Option 2 : Validation par les tests
+
+Des tests automatisés sont fournis pour vérifier vos pipelines :
+
+```bash
+# Depuis la racine du projet
+
+# Tester les routes de l'API (l'API doit être démarrée)
+npm run test:api
+
+# Tester tous les pipelines
+npm run test:all
+```
+
+Résultat attendu quand tout est implémenté :
+```
+✅ API opérationnelle
+✅ 25359 restaurants, 85 cuisines
+✅ Top: Manhattan (10259)
+✅ Top 3: American, Chinese, Cafe/Coffee/Tea
+✅ Grades: A:80243, B:15689, C:4576...
+✅ 5 années, scores de 10.5 à 12.1
+```
+
+Les tests vérifient :
+- La structure des réponses (champs attendus)
+- La cohérence des données (nombre de quartiers, tri, etc.)
+- Les valeurs raisonnables (> 20000 restaurants, etc.)
+
+**Objectif final :** Tous les tests passent ET les graphiques affichent des données réelles !
 
 ### 6.5 Bonus : Route `/api/stats/dashboard`
 
@@ -1142,7 +1210,7 @@ Cette phase vous a permis de comprendre :
 | Concept | Application |
 |---------|-------------|
 | **Séparation des couches** | Front (affichage) ↔ API (logique) ↔ BDD (données) |
-| **API REST** | Routes HTTP qui exposent des données JSON |
+| **API REST avec Fastify** | Routes HTTP qui exposent des données JSON |
 | **Driver MongoDB** | Connexion et requêtes depuis Node.js |
 | **Agrégation en production** | Vos pipelines MongoDB dans une vraie application |
 
@@ -1178,7 +1246,7 @@ Avant de terminer ce TP, vérifiez que vous maîtrisez :
 
 ### Intégration (Phase 6)
 - [ ] Connexion Node.js/MongoDB avec le driver officiel
-- [ ] Création d'une API REST avec Express
+- [ ] Création d'une API REST avec Fastify
 - [ ] Intégration des pipelines dans des routes HTTP
 - [ ] Visualisation des données avec Chart.js
 

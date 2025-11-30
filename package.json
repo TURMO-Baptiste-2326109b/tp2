@@ -1,0 +1,24 @@
+{
+  "name": "tp2-mongodb-dashboard",
+  "version": "1.0.0",
+  "description": "TP2 MongoDB - Dashboard restaurants NYC avec API REST et visualisation",
+  "private": true,
+  "workspaces": [
+    "dashboard-api",
+    "dashboard-front"
+  ],
+  "scripts": {
+    "dev": "concurrently --names \"API,FRONT\" --prefix-colors \"blue,green\" \"npm run dev:api\" \"npm run dev:front\"",
+    "dev:api": "npm run dev --workspace=@tp2/dashboard-api",
+    "dev:front": "npm run dev --workspace=@tp2/dashboard-front",
+    "start": "concurrently \"npm run start:api\" \"npm run start:front\"",
+    "start:api": "npm run start --workspace=@tp2/dashboard-api",
+    "start:front": "npm run start --workspace=@tp2/dashboard-front",
+    "test": "npm run test --workspace=@tp2/dashboard-api",
+    "test:api": "npm run test:api --workspace=@tp2/dashboard-api",
+    "test:all": "npm run test:all --workspace=@tp2/dashboard-api"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
