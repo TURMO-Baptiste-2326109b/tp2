@@ -1312,6 +1312,44 @@ curl http://localhost:3000/api/inexistant
 
 ### 6.4 Votre mission : Compléter les routes API
 
+#### Vue d'ensemble des routes à implémenter
+
+```mermaid
+flowchart TB
+    subgraph API["API REST - dashboard-api/src/routes/stats.js"]
+        R1["/api/stats/overview"]
+        R2["/api/stats/par-quartier"]
+        R3["/api/stats/top-cuisines"]
+        R4["/api/stats/distribution-grades"]
+        R5["/api/stats/evolution-scores"]
+        R6["/api/stats/dashboard<br/>(BONUS)"]
+    end
+
+    subgraph Pipelines["Pipelines MongoDB"]
+        P1["$group + $addToSet + $size"]
+        P2["$group + $sort"]
+        P3["$group + $sort + $limit"]
+        P4["$unwind + $group + $sort"]
+        P5["$unwind + $group ($year) + $sort"]
+        P6["$facet (combine tous)"]
+    end
+
+    subgraph Dashboard["Dashboard - Graphiques"]
+        G1["Compteurs"]
+        G2["Bar Chart Quartiers"]
+        G3["Pie Chart Cuisines"]
+        G4["Doughnut Grades"]
+        G5["Line Chart Evolution"]
+    end
+
+    R1 --> P1 --> G1
+    R2 --> P2 --> G2
+    R3 --> P3 --> G3
+    R4 --> P4 --> G4
+    R5 --> P5 --> G5
+    R6 --> P6
+```
+
 Ouvrez `dashboard-api/src/routes/stats.js` et complétez les 5 pipelines d'agrégation :
 
 #### Route 1 : `/api/stats/overview`
@@ -1439,6 +1477,142 @@ Cette phase vous a permis de comprendre :
 | **Agrégation en production** | Vos pipelines MongoDB dans une vraie application |
 
 C'est exactement cette architecture que vous utiliserez pour votre **projet fil rouge** !
+
+---
+
+## Pour aller plus loin (Optionnel)
+
+Cette section propose des améliorations pour les étudiants qui ont terminé le TP en avance ou qui souhaitent approfondir leurs connaissances.
+
+### Amélioration 1 : Pagination des résultats
+
+Actuellement, `/api/stats/top-cuisines` retourne toujours le top 10. Ajoutez la pagination :
+
+```javascript
+// GET /api/stats/top-cuisines?page=1&limit=10
+fastify.get('/top-cuisines', async (request) => {
+    const page = parseInt(request.query.page) || 1;
+    const limit = parseInt(request.query.limit) || 10;
+    const skip = (page - 1) * limit;
+
+    const pipeline = [
+        { $group: { _id: "$cuisine", count: { $sum: 1 } } },
+        { $sort: { count: -1 } },
+        { $skip: skip },
+        { $limit: limit }
+    ];
+
+    return await db.collection('restaurants').aggregate(pipeline).toArray();
+});
+```
+
+### Amélioration 2 : Filtres dynamiques
+
+Ajoutez des paramètres de filtrage sur les routes existantes :
+
+```javascript
+// GET /api/stats/par-quartier?cuisine=Italian
+// GET /api/stats/top-cuisines?borough=Manhattan
+fastify.get('/par-quartier', async (request) => {
+    const matchStage = {};
+    if (request.query.cuisine) {
+        matchStage.cuisine = request.query.cuisine;
+    }
+
+    const pipeline = [
+        ...(Object.keys(matchStage).length ? [{ $match: matchStage }] : []),
+        { $group: { _id: "$borough", count: { $sum: 1 } } },
+        { $sort: { count: -1 } }
+    ];
+
+    return await db.collection('restaurants').aggregate(pipeline).toArray();
+});
+```
+
+### Amélioration 3 : Cache des résultats
+
+Les statistiques ne changent pas souvent. Implémentez un cache simple :
+
+```javascript
+const cache = new Map();
+const CACHE_TTL = 60000; // 1 minute
+
+async function getCached(key, fetchFn) {
+    const cached = cache.get(key);
+    if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+        return cached.data;
+    }
+
+    const data = await fetchFn();
+    cache.set(key, { data, timestamp: Date.now() });
+    return data;
+}
+
+// Utilisation
+fastify.get('/overview', async () => {
+    return getCached('overview', async () => {
+        const pipeline = [ /* ... */ ];
+        const result = await db.collection('restaurants').aggregate(pipeline).toArray();
+        return result[0];
+    });
+});
+```
+
+### Amélioration 4 : Index optimisés
+
+Créez les index qui accéléreront vos pipelines :
+
+```javascript
+// Index pour les requêtes par quartier
+db.restaurants.createIndex({ borough: 1 });
+
+// Index pour les requêtes par cuisine
+db.restaurants.createIndex({ cuisine: 1 });
+
+// Index composé pour les filtres combinés
+db.restaurants.createIndex({ borough: 1, cuisine: 1 });
+
+// Index pour les dates d'inspection
+db.restaurants.createIndex({ "grades.date": 1 });
+```
+
+### Amélioration 5 : Nouvelle route analytique
+
+Créez une route qui retourne les restaurants avec les meilleurs scores :
+
+```javascript
+// GET /api/stats/best-restaurants?borough=Manhattan&limit=10
+fastify.get('/best-restaurants', async (request) => {
+    const { borough, limit = 10 } = request.query;
+
+    const pipeline = [
+        ...(borough ? [{ $match: { borough } }] : []),
+        { $addFields: {
+            avg_score: { $avg: "$grades.score" },
+            nb_inspections: { $size: "$grades" }
+        }},
+        { $match: { nb_inspections: { $gte: 3 } } }, // Au moins 3 inspections
+        { $sort: { avg_score: 1 } }, // Score bas = meilleur
+        { $limit: parseInt(limit) },
+        { $project: {
+            name: 1,
+            borough: 1,
+            cuisine: 1,
+            avg_score: { $round: ["$avg_score", 1] },
+            nb_inspections: 1
+        }}
+    ];
+
+    return await db.collection('restaurants').aggregate(pipeline).toArray();
+});
+```
+
+### Ressources pour approfondir
+
+- [MongoDB University](https://university.mongodb.com/) - Cours gratuits officiels
+- [MongoDB Aggregation Pipeline Builder](https://www.mongodb.com/docs/compass/current/aggregation-pipeline-builder/) - Outil visuel dans Compass
+- [Fastify Documentation](https://www.fastify.io/docs/latest/) - Framework web Node.js
+- [Chart.js Documentation](https://www.chartjs.org/docs/) - Bibliothèque de graphiques
 
 ---
 
