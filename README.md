@@ -1096,7 +1096,124 @@ Ouvrez http://localhost:5500 dans votre navigateur.
 
 Le dashboard affichera **"TODO"** pour chaque métrique tant que vous n'aurez pas complété les pipelines.
 
-### 6.3 Votre mission : Compléter les routes API
+### 6.3 Comprendre et tester une API REST
+
+#### Qu'est-ce qu'une API REST ?
+
+Une **API REST** (Representational State Transfer) est une interface qui permet à des applications de communiquer via le protocole HTTP. Dans notre cas :
+
+- Le **dashboard** (front-end) envoie des requêtes HTTP à l'**API** (back-end)
+- L'**API** interroge **MongoDB** et retourne les résultats au format **JSON**
+- Le **dashboard** affiche ces données sous forme de graphiques
+
+```
+┌──────────────┐   GET /api/stats/overview   ┌──────────────┐
+│  Dashboard   │ ─────────────────────────►  │     API      │
+│  (navigateur)│                             │   (Fastify)  │
+│              │ ◄─────────────────────────  │              │
+└──────────────┘   {"total": 25359, ...}     └──────────────┘
+```
+
+#### Les méthodes HTTP
+
+| Méthode | Usage | Exemple |
+|---------|-------|---------|
+| **GET** | Récupérer des données | `GET /api/stats/overview` |
+| **POST** | Créer une ressource | `POST /api/restaurants` |
+| **PUT** | Modifier une ressource | `PUT /api/restaurants/123` |
+| **DELETE** | Supprimer une ressource | `DELETE /api/restaurants/123` |
+
+Dans ce TP, nous utilisons uniquement **GET** pour récupérer des statistiques.
+
+#### Tester l'API avec différents outils
+
+**Option 1 : Avec curl (terminal)**
+
+```bash
+# Test de base - vérifier que l'API répond
+curl http://localhost:3000/api/health
+
+# Récupérer les statistiques générales
+curl http://localhost:3000/api/stats/overview
+
+# Afficher le JSON formaté (avec jq si installé)
+curl http://localhost:3000/api/stats/overview | jq
+
+# Récupérer les restaurants par quartier
+curl http://localhost:3000/api/stats/par-quartier
+```
+
+**Option 2 : Directement dans le navigateur**
+
+Ouvrez simplement l'URL dans votre navigateur :
+- http://localhost:3000/api/health
+- http://localhost:3000/api/stats/overview
+- http://localhost:3000/api/stats/par-quartier
+
+Le navigateur affichera la réponse JSON brute. Installez une extension comme "JSON Formatter" pour une meilleure lisibilité.
+
+**Option 3 : Avec des outils graphiques**
+
+- **Postman** : Application complète pour tester des APIs (https://www.postman.com)
+- **Insomnia** : Alternative légère à Postman (https://insomnia.rest)
+- **Thunder Client** : Extension VS Code pour tester les APIs
+
+**Option 4 : Avec HTTPie (alternative moderne à curl)**
+
+```bash
+# Installation : pip install httpie ou brew install httpie
+http GET localhost:3000/api/health
+http GET localhost:3000/api/stats/overview
+```
+
+#### Anatomie d'une requête/réponse
+
+**Requête HTTP :**
+```
+GET /api/stats/overview HTTP/1.1
+Host: localhost:3000
+Accept: application/json
+```
+
+**Réponse HTTP :**
+```
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+{
+  "total_restaurants": 25359,
+  "total_cuisines": 85
+}
+```
+
+#### Les codes de statut HTTP
+
+| Code | Signification | Exemple |
+|------|---------------|---------|
+| **200** | OK - Succès | La requête a réussi |
+| **400** | Bad Request | Paramètres invalides |
+| **404** | Not Found | Route inexistante |
+| **500** | Server Error | Erreur côté serveur (bug, BDD down) |
+
+#### Exercice pratique : Explorer l'API
+
+Avant de compléter les pipelines, explorez l'API existante :
+
+```bash
+# 1. Vérifier que l'API est démarrée
+curl http://localhost:3000/api/health
+# Réponse attendue : {"status":"ok","database":"connected"}
+
+# 2. Tester une route non implémentée
+curl http://localhost:3000/api/stats/overview
+# Réponse actuelle : {"message":"TODO: Implémenter le pipeline"}
+
+# 3. Tester une route inexistante
+curl http://localhost:3000/api/inexistant
+# Réponse : {"message":"Route GET:/api/inexistant not found","error":"Not Found","statusCode":404}
+```
+
+### 6.4 Votre mission : Compléter les routes API
 
 Ouvrez `dashboard-api/src/routes/stats.js` et complétez les 5 pipelines d'agrégation :
 
@@ -1145,7 +1262,7 @@ const pipeline = [
 ];
 ```
 
-### 6.4 Validation
+### 6.5 Validation
 
 #### Option 1 : Validation visuelle (Dashboard)
 
@@ -1185,7 +1302,7 @@ Les tests vérifient :
 
 **Objectif final :** Tous les tests passent ET les graphiques affichent des données réelles !
 
-### 6.5 Bonus : Route `/api/stats/dashboard`
+### 6.6 Bonus : Route `/api/stats/dashboard`
 
 Pour les plus avancés, complétez la route bonus qui utilise `$facet` pour retourner **toutes les métriques en un seul appel** :
 
@@ -1203,7 +1320,7 @@ const pipeline = [
 ];
 ```
 
-### 6.6 Ce que vous avez appris
+### 6.7 Ce que vous avez appris
 
 Cette phase vous a permis de comprendre :
 
