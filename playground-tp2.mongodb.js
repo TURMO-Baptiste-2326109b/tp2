@@ -78,8 +78,14 @@ db.neighborhoods.countDocuments();
 // ============================================================================
 
 // TODO : Compléter la requête
-
-
+db.restaurants.find({
+  grades: {
+    $elemMatch: {
+      grade: "B",
+      score: { $lt: 10 }
+    }
+  }
+})
 
 // ============================================================================
 // Exercice 2 : $elemMatch avec plage de dates
@@ -94,7 +100,17 @@ db.neighborhoods.countDocuments();
 // ============================================================================
 
 // TODO : Compléter la requête
-
+db.restaurants.find({
+  grades: {
+    $elemMatch: {
+      grade: "A",
+      date: {
+        $gte: ISODate("2014-01-01"),
+        $lt: ISODate("2015-01-01")
+      }
+    }
+  }
+})
 
 
 // ============================================================================
@@ -109,6 +125,16 @@ db.neighborhoods.countDocuments();
 // ============================================================================
 
 // TODO : Compléter la requête
+db.restaurants.find({
+  grades: {
+    $elemMatch: {
+      $or: [
+        { grade: "C" },
+        { score: { $gt: 30 } }
+      ]
+    }
+  }
+})
 
 
 // ============================================================================
@@ -124,6 +150,11 @@ db.neighborhoods.countDocuments();
 // ============================================================================
 
 // TODO : Compléter la requête
+db.restaurants.find({
+  $expr: {
+    $eq: [{ $size: "$grades" }, 4]
+  }
+})
 
 
 
@@ -143,6 +174,14 @@ db.neighborhoods.countDocuments();
 // ============================================================================
 
 // TODO : Compléter la requête
+db.restaurants.find({
+  $expr: {
+    $lt: [
+      { $arrayElemAt: ["$grades.score", 0] },   // Plus récent (index 0)
+      { $arrayElemAt: ["$grades.score", -1] }  // Plus ancien (index -1)
+    ]
+  }
+})
 
 
 
@@ -158,6 +197,12 @@ db.neighborhoods.countDocuments();
 // ============================================================================
 
 // TODO : Compléter la requête
+db.restaurants.find({
+  $or: [
+    { borough: { $exists: false } },
+    { borough: "" }
+  ]
+})
 
 
 
