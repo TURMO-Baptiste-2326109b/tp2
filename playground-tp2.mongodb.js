@@ -78,9 +78,7 @@ db.neighborhoods.countDocuments();
 // ============================================================================
 
 // TODO : Compléter la requête
-db.restaurants.find({
 
-});
 
 
 // ============================================================================
@@ -97,9 +95,7 @@ db.restaurants.find({
 // ============================================================================
 
 // TODO : Compléter la requête
-db.restaurants.find({
 
-});
 
 
 // ============================================================================
@@ -115,9 +111,6 @@ db.restaurants.find({
 // ============================================================================
 
 // TODO : Compléter la requête
-db.restaurants.find({
-
-});
 
 
 // ============================================================================
@@ -134,9 +127,7 @@ db.restaurants.find({
 // ============================================================================
 
 // TODO : Compléter la requête
-db.restaurants.find({
 
-});
 
 
 // ============================================================================
@@ -155,9 +146,7 @@ db.restaurants.find({
 // ============================================================================
 
 // TODO : Compléter la requête
-db.restaurants.find({
 
-});
 
 
 // ============================================================================
@@ -172,9 +161,7 @@ db.restaurants.find({
 // ============================================================================
 
 // TODO : Compléter la requête
-db.restaurants.find({
 
-});
 
 
 // ============================================================================
@@ -209,9 +196,7 @@ db.restaurants.find({
 // ============================================================================
 
 // TODO : Compléter le pipeline
-db.restaurants.aggregate([
 
-]);
 
 
 // ============================================================================
@@ -229,9 +214,7 @@ db.restaurants.aggregate([
 // ============================================================================
 
 // TODO : Compléter le pipeline
-db.restaurants.aggregate([
 
-]);
 
 
 // ============================================================================
@@ -250,9 +233,6 @@ db.restaurants.aggregate([
 // ============================================================================
 
 // TODO : Compléter le pipeline
-db.restaurants.aggregate([
-
-]);
 
 
 // ============================================================================
@@ -293,9 +273,6 @@ db.restaurants.aggregate([
 // ============================================================================
 
 // TODO : Compléter le pipeline
-db.restaurants.aggregate([
-
-]);
 
 
 // ============================================================================
@@ -312,9 +289,6 @@ db.restaurants.aggregate([
 // ============================================================================
 
 // TODO : Compléter le pipeline
-db.restaurants.aggregate([
-
-]);
 
 
 // ============================================================================
@@ -338,17 +312,17 @@ db.restaurants.aggregate([
 // ############################################################################
 
 // Préparation : Créer la collection des quartiers (exécuter une fois)
-db.boroughs.drop();
-db.boroughs.insertMany([
-    { _id: "Manhattan", population: 1628706, area_km2: 59.1 },
-    { _id: "Brooklyn", population: 2559903, area_km2: 183.4 },
-    { _id: "Queens", population: 2253858, area_km2: 283.0 },
-    { _id: "Bronx", population: 1418207, area_km2: 110.0 },
-    { _id: "Staten Island", population: 476143, area_km2: 151.1 }
-]);
+// db.boroughs.drop();
+// db.boroughs.insertMany([
+//     { _id: "Manhattan", population: 1628706, area_km2: 59.1 },
+//     { _id: "Brooklyn", population: 2559903, area_km2: 183.4 },
+//     { _id: "Queens", population: 2253858, area_km2: 283.0 },
+//     { _id: "Bronx", population: 1418207, area_km2: 110.0 },
+//     { _id: "Staten Island", population: 476143, area_km2: 151.1 }
+// ]);
 
-// Vérification
-db.boroughs.find();
+// // Vérification
+// db.boroughs.find();
 
 
 // ============================================================================
@@ -369,9 +343,6 @@ db.boroughs.find();
 // ============================================================================
 
 // TODO : Compléter le pipeline
-db.restaurants.aggregate([
-
-]);
 
 
 // ============================================================================
@@ -388,9 +359,6 @@ db.restaurants.aggregate([
 // ============================================================================
 
 // TODO : Compléter le pipeline
-db.restaurants.aggregate([
-
-]);
 
 
 // ============================================================================
@@ -405,24 +373,24 @@ db.restaurants.aggregate([
 // ============================================================================
 
 // TODO : Compléter le pipeline
-db.restaurants.aggregate([
-    { $facet: {
-        // Pipeline 1 : Restaurants par quartier
-        par_quartier: [
-            // TODO
-        ],
+// db.restaurants.aggregate([
+//     { $facet: {
+//         // Pipeline 1 : Restaurants par quartier
+//         par_quartier: [
+//             // TODO
+//         ],
 
-        // Pipeline 2 : Distribution des grades
-        distribution_grades: [
-            // TODO
-        ],
+//         // Pipeline 2 : Distribution des grades
+//         distribution_grades: [
+//             // TODO
+//         ],
 
-        // Pipeline 3 : Top 3 cuisines à Manhattan
-        top_manhattan: [
-            // TODO
-        ]
-    }}
-]);
+//         // Pipeline 3 : Top 3 cuisines à Manhattan
+//         top_manhattan: [
+//             // TODO
+//         ]
+//     }}
+// ]);
 
 
 // ============================================================================
@@ -457,10 +425,10 @@ db.restaurants.aggregate([
 
 // Étape 1 : Mesurer AVANT optimisation
 // Noter : totalDocsExamined, executionTimeMillis, stage
-db.restaurants.find({
-    borough: "Brooklyn",
-    cuisine: "Italian"
-}).sort({ name: 1 }).explain("executionStats");
+// db.restaurants.find({
+//     borough: "Brooklyn",
+//     cuisine: "Italian"
+// }).sort({ name: 1 }).explain("executionStats");
 
 // Étape 2 : Créer l'index optimal
 // TODO : Quel index créer ?
@@ -468,13 +436,13 @@ db.restaurants.find({
 
 
 // Étape 3 : Mesurer APRÈS optimisation
-db.restaurants.find({
-    borough: "Brooklyn",
-    cuisine: "Italian"
-}).sort({ name: 1 }).explain("executionStats");
+// db.restaurants.find({
+//     borough: "Brooklyn",
+//     cuisine: "Italian"
+// }).sort({ name: 1 }).explain("executionStats");
 
 // Voir tous les index
-db.restaurants.getIndexes();
+// db.restaurants.getIndexes();
 
 
 // ============================================================================
@@ -492,12 +460,9 @@ db.restaurants.getIndexes();
 // ============================================================================
 
 // Étape 1 : Créer l'index géospatial
-db.restaurants.createIndex({ "address.coord": "2dsphere" });
+// db.restaurants.createIndex({ "address.coord": "2dsphere" });
 
 // TODO : Compléter la requête
-db.restaurants.find({
-
-}).limit(5);
 
 
 // ############################################################################
@@ -530,29 +495,29 @@ db.restaurants.find({
 // ============================================================================
 
 // TODO : Compléter le pipeline
-db.restaurants.aggregate([
-    { $facet: {
-        // Vue d'ensemble
-        overview: [
-            // TODO
-        ],
+// db.restaurants.aggregate([
+//     { $facet: {
+//         // Vue d'ensemble
+//         overview: [
+//             // TODO
+//         ],
 
-        // Top quartiers
-        top_quartiers: [
-            // TODO
-        ],
+//         // Top quartiers
+//         top_quartiers: [
+//             // TODO
+//         ],
 
-        // Distribution des grades
-        distribution_grades: [
-            // TODO
-        ],
+//         // Distribution des grades
+//         distribution_grades: [
+//             // TODO
+//         ],
 
-        // Evolution annuelle
-        evolution_annuelle: [
-            // TODO
-        ]
-    }}
-]);
+//         // Evolution annuelle
+//         evolution_annuelle: [
+//             // TODO
+//         ]
+//     }}
+// ]);
 
 
 // ============================================================================
