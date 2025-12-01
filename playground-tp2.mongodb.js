@@ -1,3 +1,5 @@
+/* global use, db */
+
 // ============================================================================
 // TP2 : Requêtage avancé et pipeline d'agrégation MongoDB
 // Fichier d'exercices interactif - BUT3 Informatique
@@ -49,14 +51,14 @@ use("sample_restaurants");
 
 // Vérifier que les données sont bien chargées
 db.restaurants.countDocuments();
-// Résultat attendu : ~25359 documents
+
 
 // Voir la structure d'un document
 db.restaurants.findOne();
 
 // Vérifier la collection neighborhoods
 db.neighborhoods.countDocuments();
-// Résultat attendu : ~195 documents
+
 
 
 // ############################################################################
@@ -74,7 +76,6 @@ db.neighborhoods.countDocuments();
 //          dans le tableau. Avec $elemMatch, TOUTES les conditions doivent
 //          être satisfaites par le MÊME élément.
 //
-// Résultat attendu : ~2800 documents
 // ============================================================================
 
 // TODO : Compléter la requête
@@ -91,7 +92,6 @@ db.neighborhoods.countDocuments();
 // Indice : Pour filtrer l'année 2014, utilisez une plage de dates :
 //          $gte: ISODate("2014-01-01") et $lt: ISODate("2015-01-01")
 //
-// Résultat attendu : ~18000 documents
 // ============================================================================
 
 // TODO : Compléter la requête
@@ -107,7 +107,6 @@ db.neighborhoods.countDocuments();
 //
 // Indice : Combinez $elemMatch avec $or à l'intérieur
 //
-// Résultat attendu : ~4500 documents
 // ============================================================================
 
 // TODO : Compléter la requête
@@ -123,7 +122,6 @@ db.neighborhoods.countDocuments();
 //          $size retourne la taille d'un tableau
 //          $eq: [valeur1, valeur2] teste l'égalité
 //
-// Résultat attendu : ~3500 documents
 // ============================================================================
 
 // TODO : Compléter la requête
