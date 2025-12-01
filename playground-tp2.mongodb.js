@@ -1,4 +1,8 @@
 /* global use, db */
+/* eslint-disable no-undef */
+
+// MongoDB Playground - Base de données par défaut
+// @db sample_restaurants
 
 // ============================================================================
 // TP2 : Requêtage avancé et pipeline d'agrégation MongoDB
