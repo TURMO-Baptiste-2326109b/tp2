@@ -1,12 +1,4 @@
 /* global use, db */
-<<<<<<< HEAD
-=======
-/* eslint-disable no-undef */
-
-// MongoDB Playground - Base de données par défaut
-// @db sample_restaurants
-
->>>>>>> 58996b434908c165e1e2fe4bd2c0d16a07c2c8c6
 // ============================================================================
 // TP2 : Requêtage avancé et pipeline d'agrégation MongoDB
 // Fichier d'exercices interactif - BUT3 Informatique
@@ -246,6 +238,10 @@ db.restaurants.find({
 // ============================================================================
 
 // TODO : Compléter le pipeline
+db.restaurants.aggregate([
+  { $group: { _id: "$borough", count: { $sum: 1 } } },
+  { $sort: { count: -1 } }
+])
 
 
 
@@ -264,6 +260,12 @@ db.restaurants.find({
 // ============================================================================
 
 // TODO : Compléter le pipeline
+db.restaurants.aggregate([
+  { $match: { borough: "Manhattan" } },
+  { $group: { _id: "$cuisine", count: { $sum: 1 } } },
+  { $sort: { count: -1 } },
+  { $limit: 5 }
+])
 
 
 
@@ -283,6 +285,17 @@ db.restaurants.find({
 // ============================================================================
 
 // TODO : Compléter le pipeline
+db.restaurants.aggregate([
+  { $group: {
+      _id: "$borough",
+      cuisines: { $addToSet: "$cuisine" }
+  }},
+  { $project: {
+      quartier: "$_id",
+      nb_cuisines: { $size: "$cuisines" }
+  }},
+  { $sort: { nb_cuisines: -1 } }
+])
 
 
 // ============================================================================
@@ -323,6 +336,15 @@ db.restaurants.find({
 // ============================================================================
 
 // TODO : Compléter le pipeline
+db.restaurants.aggregate([
+  { $unwind: "$grades" },
+  { $group: {
+      _id: { $year: "$grades.date" },
+      avg_score: { $avg: "$grades.score" },
+      count: { $sum: 1 }
+  }},
+  { $sort: { _id: 1 } }
+])
 
 
 // ============================================================================
@@ -339,6 +361,15 @@ db.restaurants.find({
 // ============================================================================
 
 // TODO : Compléter le pipeline
+db.restaurants.aggregate([
+  { $unwind: "$grades" },
+  { $group: {
+      _id: "$borough",
+      total_inspections: { $sum: 1 },
+      avg_score: { $avg: "$grades.score" }
+  }},
+  { $sort: { total_inspections: -1 } }
+])
 
 
 // ============================================================================
@@ -393,6 +424,27 @@ db.restaurants.find({
 // ============================================================================
 
 // TODO : Compléter le pipeline
+db.restaurants.aggregate([
+  { $group: { _id: "$borough", count: { $sum: 1 } } },
+  { $lookup: {
+      from: "boroughs",
+      localField: "_id",
+      foreignField: "_id",
+      as: "borough_info"
+  }},
+  { $unwind: "$borough_info" },
+  { $project: {
+      borough: "$_id",
+      nb_restaurants: "$count",
+      population: "$borough_info.population",
+      densite: {
+          $divide: [
+              { $multiply: ["$count", 10000] },
+              "$borough_info.population"
+          ]
+      }
+  }}
+])
 
 
 // ============================================================================
@@ -409,6 +461,17 @@ db.restaurants.find({
 // ============================================================================
 
 // TODO : Compléter le pipeline
+db.restaurants.aggregate([
+  { $addFields: { nb_inspections: { $size: "$grades" } } },
+  { $bucket: {
+      groupBy: "$nb_inspections",
+      boundaries: [0, 1, 3, 5, 7, 20],
+      default: "20+",
+      output: {
+          count: { $sum: 1 }
+      }
+  }}
+])
 
 
 // ============================================================================
@@ -423,24 +486,30 @@ db.restaurants.find({
 // ============================================================================
 
 // TODO : Compléter le pipeline
-// db.restaurants.aggregate([
-//     { $facet: {
-//         // Pipeline 1 : Restaurants par quartier
-//         par_quartier: [
-//             // TODO
-//         ],
+db.restaurants.aggregate([
+    { $facet: {
+        // Pipeline 1 : Restaurants par quartier
+        par_quartier: [
+            { $group: { _id: "$borough", count: { $sum: 1 } } },
+            { $sort: { count: -1 } }
+        ],
 
-//         // Pipeline 2 : Distribution des grades
-//         distribution_grades: [
-//             // TODO
-//         ],
+        // Pipeline 2 : Distribution des grades
+        distribution_grades: [
+            { $unwind: "$grades" },
+            { $group: { _id: "$grades.grade", count: { $sum: 1 } } },
+            { $sort: { count: -1 } }
+        ],
 
-//         // Pipeline 3 : Top 3 cuisines à Manhattan
-//         top_manhattan: [
-//             // TODO
-//         ]
-//     }}
-// ]);
+        // Pipeline 3 : Top 3 cuisines à Manhattan
+        top_manhattan: [
+            { $match: { borough: "Manhattan" } },
+            { $group: { _id: "$cuisine", count: { $sum: 1 } } },
+            { $sort: { count: -1 } },
+            { $limit: 3 }
+        ]
+    }}
+]);
 
 
 // ============================================================================
@@ -482,7 +551,7 @@ db.restaurants.find({
 
 // Étape 2 : Créer l'index optimal
 // TODO : Quel index créer ?
-// db.restaurants.createIndex({ ... })
+db.restaurants.createIndex({ borough: 1, cuisine: 1, name: 1 })
 
 
 // Étape 3 : Mesurer APRÈS optimisation
@@ -513,6 +582,17 @@ db.restaurants.find({
 // db.restaurants.createIndex({ "address.coord": "2dsphere" });
 
 // TODO : Compléter la requête
+db.restaurants.find({
+  "address.coord": {
+    $nearSphere: {
+      $geometry: {
+        type: "Point",
+        coordinates: [-73.965355, 40.782865]
+      }
+    }
+  },
+  cuisine: "Italian"
+}).limit(5)
 
 
 // ############################################################################
@@ -545,29 +625,47 @@ db.restaurants.find({
 // ============================================================================
 
 // TODO : Compléter le pipeline
-// db.restaurants.aggregate([
-//     { $facet: {
-//         // Vue d'ensemble
-//         overview: [
-//             // TODO
-//         ],
+db.restaurants.aggregate([
+    { $facet: {
+        // Vue d'ensemble
+        overview: [
+            { $group: {
+                _id: null,
+                total_restaurants: { $sum: 1 },
+                cuisines: { $addToSet: "$cuisine" }
+            }},
+            { $project: {
+                _id: 0,
+                total_restaurants: 1,
+                total_cuisines: { $size: "$cuisines" }
+            }}
+        ],
 
-//         // Top quartiers
-//         top_quartiers: [
-//             // TODO
-//         ],
+        // Top quartiers
+        top_quartiers: [
+            { $group: { _id: "$borough", count: { $sum: 1 } } },
+            { $sort: { count: -1 } },
+            { $limit: 5 }
+        ],
 
-//         // Distribution des grades
-//         distribution_grades: [
-//             // TODO
-//         ],
+        // Distribution des grades
+        distribution_grades: [
+            { $unwind: "$grades" },
+            { $group: { _id: "$grades.grade", count: { $sum: 1 } } },
+            { $sort: { _id: 1 } }
+        ],
 
-//         // Evolution annuelle
-//         evolution_annuelle: [
-//             // TODO
-//         ]
-//     }}
-// ]);
+        // Evolution annuelle
+        evolution_annuelle: [
+            { $unwind: "$grades" },
+            { $group: {
+                _id: { $year: "$grades.date" },
+                avg_score: { $avg: "$grades.score" }
+            }},
+            { $sort: { _id: 1 } }
+        ]
+    }}
+]);
 
 
 // ============================================================================
